@@ -19,7 +19,7 @@
 - **[3. Cómo se clasifican las restricciones](#3-cómo-se-clasifican-las-restricciones)** — por dónde se escriben: columna, tabla
 - **[4. Las dos clasificaciones no se superponen](#4-las-dos-clasificaciones-no-se-superponen)** — la grilla, y por qué «de tabla» nunca responde «¿qué garantiza?»
 - **[5. El caso](#5-el-caso)** — `Localidades` y `Personas`, y por qué se trabaja con valores
-- **[6. Los ejemplos](#6-los-ejemplos)** — cuatro, cada uno agregando una capa. **Es la parte práctica**
+- **[6. Los ejemplos](#6-los-ejemplos)** — cinco, cada uno agregando una capa. **Es la parte práctica**
 - **[7. Los límites de este documento](#7-los-límites-de-este-documento)** — qué no se verificó, qué no se cubre, qué se corrigió del apunte
 - **[8. Referencias](#8-referencias)**
 - **[9. El criterio, en una línea](#9-el-criterio-en-una-línea)**
@@ -149,6 +149,8 @@ No hay «datos huérfanos»: si una fila nombra a otra tabla, la fila nombrada e
 
 **Un `NULL` ahí significa «no sé», no «error».** Distinguir «no sé» de «no aplica» ya no lo puede hacer la restricción.
 
+Y falta una decisión más, que la `FOREIGN KEY` obliga a tomar aunque no se escriba: **qué debe pasar cuando se borra o cambia la fila referenciada.** Está en el Ejemplo 5 (§6.6).
+
 ### 2.4 Integridad de dominio
 
 **Cada valor está dentro de lo que su columna admite.**
@@ -205,8 +207,8 @@ El criterio es otro: **dónde va la declaración dentro del `CREATE TABLE`**, qu
 ### 3.1 Restricción de columna
 
 **Se escribe adentro de la declaración de una columna y solo habla de ella.**
-
-```sql
+  
+```
 CREATE TABLE Ejemplo_Columna
 (
     Id                 INT PRIMARY KEY,                      -- entidad
@@ -223,7 +225,7 @@ Según la gramática de `CREATE TABLE` de SQL Server, a nivel de columna se admi
 
 **Se escribe aparte de las columnas, después de todas, y puede nombrar a varias.**
 
-```sql
+```
 CREATE TABLE Ejemplo_Tabla
 (
     Id_Pedido    INT,
@@ -374,9 +376,9 @@ erDiagram
 
 ### 6.1 ¿Cómo se prepara la base?
 
-Se rehace desde cero en cada ejemplo, para que ninguno herede el estado del anterior. **El orden importa**: primero se sale de la base que se va a borrar, después se borra, después se crea, y recién ahí se entra.
+  Se rehace desde cero en cada ejemplo o ejercicio, para que ninguno herede el estado del anterior. **El orden importa**: primero se sale de la base que se va a borrar, después se borra, después se crea, y recién ahí se entra.
 
-```sql
+```
 USE master;
 GO
 DROP DATABASE IF EXISTS Ejemplo_Integridad_DB;
@@ -394,9 +396,9 @@ GO
 
 ### 6.2 Ejemplo 1 — Integridad de entidad
 
-**Qué se quiere:** que ninguna fila se confunda con otra.
+  **Qué se quiere:** que ninguna fila se confunda con otra.
 
-```sql
+```
 CREATE TABLE Localidades
 (
     Id     INT PRIMARY KEY,
@@ -428,17 +430,17 @@ INNER JOIN Localidades l ON p.Id_LugarNacimiento = l.Id
 ORDER BY l.Nombre;
 ```
 
-**Qué hay y qué todavía no.** `Id_LugarNacimiento` es una columna `INT` común: **no hay `FOREIGN KEY`**. El `JOIN` funciona igual —los seis valores existen en `Localidades`— y ahí está la lección de la §1.2: **esta base está referencialmente íntegra sin ninguna restricción que la obligue a estarlo.**
+  **Qué hay y qué todavía no.** `Id_LugarNacimiento` es una columna `INT` común: **no hay `FOREIGN KEY`**. El `JOIN` funciona igual —los seis valores existen en `Localidades`— y ahí está la lección de la §1.2: **esta base está referencialmente íntegra sin ninguna restricción que la obligue a estarlo.**
 
-**Lo que la `PRIMARY KEY` no hace:** las filas 1 y 3 son las dos `'Daniela'`. La clave primaria está intacta y la base no puede decir si son dos personas o una cargada dos veces.
+  **Lo que la `PRIMARY KEY` no hace:** las filas 1 y 3 son las dos `'Daniela'`. La clave primaria está intacta y la base no puede decir si son dos personas o una cargada dos veces.
 
 ### 6.3 Ejemplo 2 — Integridad referencial
 
-**Qué se quiere:** que ninguna persona diga haber nacido en una localidad que no existe.
+  **Qué se quiere:** que ninguna persona diga haber nacido en una localidad que no existe.
 
-Las dos formas de declararlo son equivalentes en efecto y distintas en consecuencias:
+  Las dos formas de declararlo son equivalentes en efecto y distintas en consecuencias:
 
-```sql
+```
 -- Forma de columna: más corta, sin nombre propio
 CREATE TABLE Personas
 (
@@ -448,7 +450,7 @@ CREATE TABLE Personas
 );
 ```
 
-```sql
+```
 -- Forma de tabla: con nombre propio  ← la que usa este documento
 CREATE TABLE Personas
 (
@@ -460,17 +462,17 @@ CREATE TABLE Personas
 );
 ```
 
-**Por qué se elige la segunda:** por la §3.4 — el nombre aparece en el mensaje de error, y un nombre generado no se puede buscar.
+  **Por qué se elige la segunda:** por la §3.4 — el nombre aparece en el mensaje de error, y un nombre generado no se puede buscar.
 
-**Convención de nombre adoptada:** `FK_<tabla que referencia>_<tabla referenciada>`. Se lee en el mismo orden en que va la flecha: `FK_Personas_Localidades` es «de Personas hacia Localidades». Es una decisión de este documento, no una regla del motor — pero **una convención cualquiera aplicada siempre vale más que la mejor convención aplicada a veces**.
+  **Convención de nombre adoptada:** `FK_<tabla que referencia>_<tabla referenciada>`. Se lee en el mismo orden en que va la flecha: `FK_Personas_Localidades` es «de Personas hacia Localidades». Es una decisión de este documento, no una regla del motor — pero **una convención cualquiera aplicada siempre vale más que la mejor convención aplicada a veces**.
 
-**Lo que esta declaración todavía permite:** `Id_LugarNacimiento` sigue admitiendo `NULL`. Una persona sin lugar de nacimiento entra sin problema, y eso es correcto según la §2.3 — el `NULL` no es un huérfano. Si el negocio dice que el dato es obligatorio, falta el `NOT NULL`, y eso es el Ejemplo 3.
+  **Lo que esta declaración todavía permite:** `Id_LugarNacimiento` sigue admitiendo `NULL`. Una persona sin lugar de nacimiento entra sin problema, y eso es correcto según la §2.3 — el `NULL` no es un huérfano. Si el negocio dice que el dato es obligatorio, falta el `NOT NULL`, y eso es el Ejemplo 3.
 
 ### 6.4 Ejemplo 3 — Integridad de dominio
 
-**Qué se quiere:** que no haya nombres vacíos ni personas sin lugar de nacimiento.
+  **Qué se quiere:** que no haya nombres vacíos ni personas sin lugar de nacimiento.
 
-```sql
+```
 CREATE TABLE Localidades
 (
     Id     INT PRIMARY KEY,
@@ -492,7 +494,7 @@ CREATE TABLE Personas
 
 **Hasta dónde llega `VARCHAR(100) NOT NULL`:** impide el nulo, no el vacío. `''` y `'   '` entran. Si el negocio pide un nombre real, hace falta agregar:
 
-```sql
+```
 CONSTRAINT CK_Personas_Nombre CHECK (LEN(LTRIM(RTRIM(Nombre))) > 0)
 ```
 
@@ -502,7 +504,7 @@ CONSTRAINT CK_Personas_Nombre CHECK (LEN(LTRIM(RTRIM(Nombre))) > 0)
 
 **Es el ejemplo más importante de todos**, porque es el único que corre **contra** la restricción en vez de a favor. Una restricción que nunca se vio rechazar algo es una restricción que no se sabe si está.
 
-```sql
+```
 USE Ejemplo_Integridad_DB;
 GO
 
@@ -531,9 +533,167 @@ Los tres mensajes, **citados literalmente del apunte de la cátedra**:
 
 *(Los nombres de restricción de estos mensajes son los del apunte original, anteriores a la convención adoptada en la §6.3.)*
 
-### 6.6 El script completo
+### 6.6 Ejemplo 5 — Qué pasa cuando se borra lo referenciado
+
+**Qué se quiere:** ver qué hace la `FOREIGN KEY` cuando el borrado no es sobre la tabla que la tiene, sino sobre la que ella referencia.
+
+Es la única decisión de este documento que **no se puede evitar**: si no se declara nada, queda tomada igual. Las `FOREIGN KEY` de los ejemplos anteriores no dicen `ON DELETE`, y eso no significa «no hay regla» — significa `NO ACTION`, que es el valor por omisión de SQL Server.
+
+Las cuatro opciones que admite la cláusula, con la descripción literal de la documentación:
+
+| Opción | Qué hace al borrar la fila referenciada |
+| --- | --- |
+| **`NO ACTION`** *(por omisión)* | «*The Database Engine raises an error and the delete action on the row in the parent table is rolled back*» |
+| **`CASCADE`** | «*Corresponding rows are deleted from the referencing table if that row is deleted from the parent table*» |
+| **`SET NULL`** | «*All the values that make up the foreign key are set to NULL*». Requisito: «*the foreign key columns must be nullable*» |
+| **`SET DEFAULT`** | «*All the values … are set to their default values*». Requisito: «*all foreign key columns must have default definitions*» |
+
+#### a. Probar la opción que ya está puesta
+
+Los datos de la §5.2 alcanzan para las dos pruebas: la localidad `4` (Hasenkamp) no la usa nadie, y la `3` (Hernandarias) la usa Arturo.
 
 ```sql
+USE Ejemplo_Integridad_DB;
+GO
+
+-- (a) Borrar una localidad que nadie referencia
+DELETE FROM Localidades WHERE Id = 4;   -- Hasenkamp: ninguna persona nació ahí
+GO
+
+-- (b) Borrar una localidad referenciada, con NO ACTION por omisión
+DELETE FROM Localidades WHERE Id = 3;   -- Hernandarias: ahí nació Arturo
+GO
+```
+
+El primer `DELETE` funciona. El segundo no: **la restricción que protege a `Personas` está impidiendo un borrado en `Localidades`** —una tabla que no se está tocando—, y esa es la parte que sorprende la primera vez.
+
+| | |
+| --- | --- |
+| ✅ | «No se puede borrar una localidad mientras alguien la referencie» |
+| ❌ | «La `FOREIGN KEY` solo controla lo que entra en `Personas`» |
+
+**La clave foránea no controla solo lo que entra: controla también lo que se va del otro lado.**
+
+#### b. Cambiar la regla y volver a probar
+
+Una restricción se quita y se pone: es un objeto del esquema, no una propiedad de los datos (§2.1).
+
+```sql
+ALTER TABLE Personas DROP CONSTRAINT FK_Personas_Localidades;
+GO
+
+ALTER TABLE Personas
+    ADD CONSTRAINT FK_Personas_Localidades FOREIGN KEY (Id_LugarNacimiento)
+        REFERENCES Localidades(Id)
+        ON DELETE CASCADE;
+GO
+
+SELECT * FROM Personas;                 -- seis personas
+GO
+DELETE FROM Localidades WHERE Id = 3;   -- Hernandarias: ahora sí se borra
+GO
+SELECT * FROM Personas;                 -- cinco: Arturo ya no está
+```
+
+**El `DELETE` funcionó, y Arturo desapareció.** No hubo error, no hubo aviso, y la sentencia decía `Localidades` — no `Personas`.
+
+Y si en lugar de Hernandarias se borra Paraná:
+
+```sql
+DELETE FROM Localidades WHERE Id = 1;   -- se van Daniela, Andrés y Armando
+```
+
+**Una sola línea borra tres personas.** El borrado en cascada es la única de las cuatro opciones que **destruye datos en silencio**: `NO ACTION` avisa con un error, `SET NULL` y `SET DEFAULT` dejan la fila en su lugar.
+
+*(Sobre este esquema, `SET NULL` además no se podría: la documentación pide que las columnas de la clave foránea sean nulables, y en la §6.4 declaramos `Id_LugarNacimiento INT NOT NULL`. **Una decisión de dominio le cerró la puerta a una decisión referencial** — por eso las restricciones se piensan juntas.)*
+
+#### c. Qué acaba de declarar el esquema, y cómo se mapea
+
+**Respuesta: que una persona es *parte de* su localidad de nacimiento.**
+
+La cascada no borró filas nada más: **dijo algo sobre la relación**. Leído en castellano, `ON DELETE CASCADE` acá declara que *una persona registrada en una localidad deja de existir cuando esa localidad deja de existir* — o sea, que la persona **no es una entidad con vida propia**, sino un componente de la localidad.
+
+Y sin cascada, el mismo par de tablas declara lo contrario: que la persona existe por su cuenta y la localidad es apenas algo que la persona **menciona**.
+
+| Se declara | Lo que la cláusula dice de la relación | Cómo se llama |
+| --- | --- | --- |
+| `ON DELETE NO ACTION` | La parte referenciada se **menciona**; la fila existe sin ella | **Agregación** |
+| `ON DELETE CASCADE` | La parte referenciante **es parte de** la referenciada; sin ella no es nada | **Composición** |
+
+**La misma `FOREIGN KEY`, dos modelos distintos.** No cambió ni una columna ni un dato: cambió una cláusula, y con ella el significado de todo el esquema. Esa es la razón de ser de este ejemplo — es la forma más corta de ver que **la integridad referencial no es una sola cosa**, y que elegir la acción del borrado es elegir qué tipo de relación se está modelando.
+
+En UML esa diferencia se dibuja con el rombo: **blanco para la agregación, relleno para la composición**. En SQL Server, el rombo relleno se escribe `ON DELETE CASCADE`.
+
+**Y acá aparece el problema de fondo del Tema 2: composición y agregación son conceptos del modelo de objetos, y el modelo relacional no los tiene.** No hay una palabra reservada `COMPOSICION`. Lo que hay es una clave foránea y las decisiones que la rodean — y el mapeo consiste en elegirlas de modo que el esquema **se comporte** como el modelo de objetos dice que debe comportarse.
+
+| Lo que afirma el modelo de objetos | Cómo se escribe en el modelo relacional |
+| --- | --- |
+| La parte **no existe sin** el todo | `NOT NULL` en la clave foránea |
+| Destruido el todo, **se destruye la parte** | `ON DELETE CASCADE` |
+| La parte **pertenece a un solo** todo | La clave foránea es una sola columna, y si hace falta, un `UNIQUE` que impida repetir el vínculo |
+| *(Agregación)* La parte **se puede compartir** y sobrevive sola | La clave foránea admite `NULL` y va `ON DELETE NO ACTION` |
+| *(Agregación muchos a muchos)* | Una tabla relacional aparte, con su propia clave primaria compuesta |
+
+**Ninguna de esas líneas es una traducción automática: cada una es una decisión.** Por eso el mapeo se verifica con datos —«¿este conjunto de filas puede existir según el modelo de objetos?»— y no leyendo el `CREATE TABLE`. Es el método que propone la [Guía 2.1](Guia2.1/Guia2.1.Restricciones-Integridad.md) en su introducción: construir primero un conjunto de datos coherente con el modelo, y recién después comprobar que el DDL lo admite y no admite otra cosa.
+
+| | |
+| --- | --- |
+| ✅ | «Declaro `CASCADE` porque la fila referenciante no significa nada sin la referenciada» |
+| ✅ | «Declaro `NO ACTION` porque la fila referenciante existe por su cuenta» |
+| ⚠️ | «El `DELETE` fallaba, le puse `CASCADE` y anduvo» — eso no es elegir composición, es esquivar un error |
+
+**El criterio, y no depende del motor:** si al borrar la fila referenciada la otra **sigue teniendo sentido sola**, es agregación y no va cascada. Si **queda sin significado**, es composición y va.
+
+Y conviene escribir la que se eligió, aunque coincida con el valor por omisión:
+
+```sql
+CONSTRAINT FK_Personas_Localidades FOREIGN KEY (Id_LugarNacimiento)
+    REFERENCES Localidades(Id)
+    ON DELETE NO ACTION      -- agregación: la persona no es parte de la localidad
+```
+
+El comportamiento es idéntico al de no escribir nada. Lo que cambia es que **una omisión y una decisión se ven igual en el `CREATE TABLE`** — y acá la decisión es de modelado, no de sintaxis.
+
+#### d. ¿Y `ON UPDATE`?
+
+**Respuesta: existe, hace lo mismo con el cambio de valor, y en este esquema no tiene nada que hacer.**
+
+```sql
+ALTER TABLE Personas DROP CONSTRAINT FK_Personas_Localidades;
+GO
+
+ALTER TABLE Personas
+    ADD CONSTRAINT FK_Personas_Localidades FOREIGN KEY (Id_LugarNacimiento)
+        REFERENCES Localidades(Id)
+        ON UPDATE CASCADE
+        ON DELETE NO ACTION;
+GO
+
+UPDATE Localidades SET Id = 30 WHERE Id = 2;            -- La Paz pasa a ser la 30
+GO
+SELECT * FROM Personas WHERE Id_LugarNacimiento = 30;   -- Andrés y Daniela vinieron detrás
+```
+
+Funciona: el cambio bajó solo. **Pero renumerar una localidad no es algo que pase.** El `Id` de `Localidades` es una clave *subrogada* —un número que inventó el sistema para identificar, sin significado propio—, y esas claves no cambian nunca.
+
+**`ON UPDATE CASCADE` es la respuesta a un problema que aparece con claves *naturales***: un código de curso, un CUIT mal cargado, una patente. Ahí el valor sí se corrige, y sin cascada la corrección se rechaza porque hay filas apuntando al valor viejo.
+
+Y hay una asimetría con el `DELETE` que conviene ver: **en el `UPDATE` la cascada conserva información en vez de destruirla.** La fila sigue apuntando a lo mismo, que ahora se llama distinto. Es la otra cara de la misma cláusula.
+
+| | Qué hace la cascada | Cuándo conviene |
+| --- | --- | --- |
+| **`ON UPDATE`** | Conserva el vínculo cuando cambia el valor de la clave | Casi siempre, **si la clave es natural**. Con clave subrogada es letra muerta |
+| **`ON DELETE`** | Destruye filas, en silencio | Solo si la fila referenciante pierde el sentido sin la referenciada |
+
+#### e. Dónde sigue esto
+
+**Un caso donde la composición no hay que forzarla.** En la [Guía 2.1](Guia2.1/Guia2.1.Restricciones-Integridad.md), el Ejercicio 2 modela un curso y sus inscripciones: ahí la parte es una inscripción, que sin su curso no es nada, y el enunciado pide exactamente lo de la §6.6c — «*con las restricciones en cascada debería borrar también los alumnos relacionados a ese curso*». Su Ejercicio 1, con las mismas dos entidades pero relacionadas por agregación, necesita en cambio una tabla relacional.
+
+**Dos ejercicios, las mismas dos tablas, y la única diferencia real es el tipo de relación.** Este apunte deja el mecanismo y el criterio; la guía hace el mapeo completo.
+
+### 6.7 El script completo
+
+```
 -- ============================================================
 -- Integridad y restricciones — SQL Server
 -- Base de ejemplo: Localidades y Personas
@@ -570,6 +730,7 @@ CREATE TABLE Personas
     CONSTRAINT PK_Personas            PRIMARY KEY (Id),
     CONSTRAINT FK_Personas_Localidades FOREIGN KEY (Id_LugarNacimiento)
         REFERENCES Localidades(Id)
+        ON DELETE NO ACTION      -- agregación: la persona no es parte de la localidad (§6.6c)
 );
 GO
 
@@ -586,6 +747,8 @@ ORDER BY l.Nombre;
 ```
 
 **Ocho restricciones, tres tipos de integridad, dos alcances.** Cinco `NOT NULL` —dominio, de columna—, dos `PRIMARY KEY` —entidad— y una `FOREIGN KEY` —referencial—, estas tres últimas escritas como restricciones de tabla. Los números no coinciden porque cuentan cosas distintas: es la §4 en una sola pantalla.
+
+**Y la acción referencial está escrita**, aunque `NO ACTION` sea el valor por omisión. No es una formalidad: es la línea que declara que la relación es una **agregación** y no una composición (§6.6c). Cambiarla por `CASCADE` cambia el modelo, no el rendimiento.
 
 **Las tres que admiten nombre lo tienen.** `NOT NULL` no lleva nombre propio —no lo admite—, así que aparece en los errores identificado por la columna, como se ve en el mensaje (b) de la §6.5. Las otras tres van a nombrarse solas en cualquier error: ninguna traerá un sufijo generado.
 
@@ -605,12 +768,12 @@ ORDER BY l.Nombre;
 
 | Ausencia | Tipo | Qué corresponde |
 | --- | --- | --- |
-| `ON DELETE` / `ON UPDATE` | **Pendiente** | Qué pasa al borrar una localidad usada es una decisión de diseño y merece su propio tratamiento. Sin declararlas, SQL Server aplica su comportamiento por omisión |
+| `SET DEFAULT`, y los ciclos de cascada | **Pendiente** | `ON DELETE` y `ON UPDATE` se tratan en la §6.6, pero solo con `NO ACTION` y `CASCADE`. Qué pasa cuando dos caminos de borrado en cascada llegan a la misma tabla tiene restricciones propias que **no verificamos** |
 | *Triggers*, `ASSERTION` y procedimientos | **Otra herramienta** | Es como se hacen cumplir las reglas de la §2.5 que no se pueden declarar |
 | Índices | **Otra herramienta** | `PRIMARY KEY` y `UNIQUE` se apoyan en índices, pero eso es rendimiento, no integridad |
 | Colación y acentos | **Pendiente** | Si `'Parana'` y `'Paraná'` son el mismo valor lo decide la colación de la columna, no el tipo |
 | `IDENTITY` y generación de claves | **Pendiente** | Acá las claves se escriben a mano para poder verlas; en producción la pregunta es quién genera el próximo `Id` |
-| Composición, agregación y herencia | **No aplica acá** | Es el mapeo que anuncia el temario; va en su propio documento |
+| El mapeo completo de composición, agregación y herencia | **Otra herramienta** | Acá solo se abre el concepto, en la §6.6c, porque es hasta donde llega una `FOREIGN KEY`. El mapeo se trabaja en las guías del Tema 2 y en el documento de herencia |
 
 ### 7.3 Qué se corrigió respecto del apunte original
 
@@ -634,7 +797,7 @@ Se anota, no se arregla en silencio.
 | --- | --- |
 | Apunte de cátedra «UTN - FRP - TUP - Programación aplicada - SQL Server - Integridad y restricciones» | Los ejemplos, los datos y los mensajes de error literales |
 | Elmasri & Navathe, *Fundamentals of Database Systems*, cap. 5 — [material publicado](https://www.cs.purdue.edu/homes/bb/cs448_Fall2017/lpdf/Chapter05.pdf) | Las definiciones de restricción, estado válido, *key constraint*, integridad de entidad y referencial, y restricciones semánticas |
-| Microsoft Learn — [`CREATE TABLE (Transact-SQL)`](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-table-transact-sql?view=sql-server-ver17) | La gramática de restricciones de columna y de tabla, y los nombres generados |
+| Microsoft Learn — [`CREATE TABLE (Transact-SQL)`](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-table-transact-sql?view=sql-server-ver17) | La gramática de restricciones de columna y de tabla, los nombres generados, y las acciones referenciales `ON DELETE` / `ON UPDATE` con sus requisitos |
 | Microsoft Learn — [Unique constraints and check constraints](https://learn.microsoft.com/en-us/sql/relational-databases/tables/unique-constraints-and-check-constraints?view=sql-server-ver17) | `UNIQUE` y los nulos, `CHECK` y la integridad de dominio, y el límite del `CHECK` con `UNKNOWN` |
 | Microsoft Learn — [Data Integrity](https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms184276(v=sql.105)) | La clasificación en cuatro tipos y la definición de *user-defined integrity* |
 | PostgreSQL — [Constraints](https://www.postgresql.org/docs/current/ddl-constraints.html) | La equivalencia entre restricción de columna y de tabla, y `NOT NULL` como `CHECK` — citadas **por el concepto**, no por el dialecto |

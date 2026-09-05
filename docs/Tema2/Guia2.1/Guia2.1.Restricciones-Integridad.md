@@ -1,4 +1,4 @@
-# Guía 2.1. Integridad referencial, restricciones — Mapeo composición y agregación
+# Guía 2.1. Restricciones e Integridad  — Mapeo composición y agregación
 
 **UTN - FRP - TUP - Programación aplicada 2026 - Acceso a datos - SQL Server**
 
@@ -8,8 +8,8 @@
 
 [Resumen - SQL](https://docs.google.com/document/d/1YUcfk7-wwUuEuzN6An1Ssg9_oDme_Xuj/preview)
 
-> «No hay una forma de hacer las cosa, pero se debe
-> contar con una que se condiga con la realidad».
+  > «No hay una forma de hacer las cosa, pero se debe
+  > contar con una que se condiga con la realidad».
 
 - **fork**: <https://github.com/UTN-FRP-TUP-Aplicada-2026/tup_aplicada_2026_guia2.1>
 - **sol**: <https://github.com/fernandofilipuzzi-dev/tup_aplicada_2026_guia2.1>
@@ -44,7 +44,6 @@ Así es que después que se generaba el DDL verificaba que el modelo resultante 
 >
 > Los datos reales no deben falsearse para que se ajusten al modelo sino que el modelo debe ajustarse para que representen lo mejor posible a esos datos. Así, con esto, con un modelo ya establecido también se pueden determinar un conjunto de valores válidos a ese modelo y fieles al sistema que representa.
 >
-> Si esta lógica se hubiese llevado a la práctica en el año 2020 la historia hubiese sido otra.
 
 ---
 
@@ -112,68 +111,68 @@ Podemos plantear las tablas equivalentes para dicho modelo de datos.
 
 En este punto planteaba en la práctica laboral premisas que me permitiera saber si iba bien.
 
-### Cardinalidad
+  > **Cardinalidad**
+  >
+  > En este modelo hay una relación de muchos a muchos, mis premisas aquí serían:
+  >
+  > Se tiene que al curso de Matemática (uno) van: Luisa, Lucrecia, LiLiana y Leonel (Muchos).
+  >
+  > Pero el mismo Leonel (**uno**) va a Matemática y Programación (**muchos** cursos).
+  > Así tenemos:
+  > 
+  > - En **un** curso en particular hay **muchos** alumnos.
+  > - En **muchos** cursos hay **un** alumno en particular.
+  > 
+  > Por lo tanto deducimos que:
+  >
+  > - **Muchos a muchos.**
+  > De ahí que acá se necesita una **tabla relacional** que vincule las diferentes relaciones entre las entidades de ambas tablas.
 
-En este modelo hay una relación de muchos a muchos, mis premisas aquí serían:
+  > **Agregación**
+  >
+  > Mi premisa aquí viene no del conjunto de datos sino del modelo propuesto, el modelo propone una agregación entonces:
+  > 
+  > - Una **"Parte"** puede ser agregada a más de un **"Todo"**.
+  >
+  > Tomando las premisas realizadas para entender la cardinalidad entre las relaciones para que sean compatibles entre estas tendríamos garantizado que ambos modelos son lo correcto según los datos propuestos.
+  > 
+  > La única restricción que hay que garantizar en la tabla referencial es que no se dupliquen las relaciones de entre tablas, Por ejemplo: que Leonel no esté dos veces inscripto a matemáticas.
 
-Se tiene que al curso de Matemática (uno) van: Luisa, Lucrecia, LiLiana y Leonel (Muchos).
-
-Pero el mismo Leonel (uno) va a Matemática y Programación (muchos).
-
-Así tenemos:
-
-- En un curso hay muchos alumnos.
-- En muchos cursos hay un alumno.
-
-Por lo tanto:
-
-- **Muchos a muchos.**
-
-De ahí que acá se necesita una tabla relacional que vincule las diferentes relaciones entre las entidades de ambas tablas.
-
-### Agregación
-
-Mi premisa aquí viene no del conjunto de datos sino del modelo propuesto, el modelo propone una agregación entonces:
-
-- Una "Parte" puede ser agregada a más de un "Todo".
-
-Tomando las premisas realizadas para entender la cardinalidad entre las relaciones es compatible, por lo tanto con esto tendríamos garantizado que ambos modelos son lo correcto según los datos propuestos.
-
-La única restricción que hay que garantizar en la tabla referencial es que no se dupliquen las relaciones de entre tablas, Por ejemplo: que Leonel no esté dos veces inscripto a matemáticas.
 
 ### Actividades
 
-1. Realizar el script que cree la base de datos, las tablas, las restricciones, la inserción de los datos dados en la Figura 1.2. (`1_creando_base_de_prueba.sql`)
-2. Realizar otro script en el que se elimine el Curso Matemáticas. Con las restricciones referenciales con delete en cascada debería borrar todas las filas de la tabla relacional referentes al curso de matemática (todos las inscripciones a matemática sin borrar los alumnos asociados a matemática). Antes y luego de eliminar hacer la consulta de los alumnos con un left join a la tabla cursos. (`2_delete_matematica.sql`)
+  1. Realizar el script que cree la **base de datos**, las **tablas**, las **restricciones**, las **inserciones** de los datos dados en la Figura 1.2. (`1_creando_base_de_prueba.sql`)
 
-![Dos grillas de resultados de SSMS. La de arriba, rotulada Consulta Antes del delete de Matemática, lista diez filas con Nombre_Alumno y Nombre_Curso. La de abajo, rotulada Consulta despues del delete de Matemática, lista nueve filas donde Luisa, Lucrecia y Liliana tienen NULL en Nombre_Curso](Imagenes/fig-1-3-consulta-antes-despues.png)
+  2. Realizar otro script en el que se elimine el Curso Matemáticas. Con las restricciones referenciales con delete en cascada debería borrar todas las filas de la tabla relacional referentes al curso de matemática (todos las inscripciones a matemática **sin borrar los alumnos asociados a matemática**). Antes y luego de eliminar hacer la consulta de los alumnos con un left join a la tabla cursos. (`2_delete_matematica.sql`)
 
-*Figura 1.3. Consulta de los alumnos antes y después de borrar el curso matemáticas*
+  ![Dos grillas de resultados de SSMS. La de arriba, rotulada Consulta Antes del delete de Matemática, lista diez filas con Nombre_Alumno y Nombre_Curso. La de abajo, rotulada Consulta despues del delete de Matemática, lista nueve filas donde Luisa, Lucrecia y Liliana tienen NULL en Nombre_Curso](Imagenes/fig-1-3-consulta-antes-despues.png)
 
-En la Figura 1.3 se ven las consultas antes y después, al eliminarse matemática, los alumnos que cursaban solo matemática quedaron sin curso asignado.
+  *Figura 1.3. Consulta de los alumnos antes y después de borrar el curso matemáticas*
+
+  En la Figura 1.3 se ven las consultas antes y después, al eliminarse matemática, los alumnos que cursaban solo matemática quedaron sin curso asignado.
 
 ---
 
 ## Ejercicio 2. Curso-Alumno. Composición
 
-Se tiene en la Figura 2.1 las siguiente clases relacionadas que representan el modelo de datos
+  Se tiene en la Figura 2.1 las siguiente clases relacionadas que representan el modelo de datos
 
-![Diagrama UML: clase Curso relacionada por composición (rombo relleno del lado de Curso) con la clase Alumno; el extremo del lado de Alumno tiene multiplicidad *, el rol -cursos y la etiqueta Inscriptos a](Imagenes/fig-2-1-modelo-composicion.png)
+  ![Diagrama UML: clase Curso relacionada por composición (rombo relleno del lado de Curso) con la clase Alumno; el extremo del lado de Alumno tiene multiplicidad *, el rol -cursos y la etiqueta Inscriptos a](Imagenes/fig-2-1-modelo-composicion.png)
 
-*Figura 2.1. Modelo de datos del dominio.*
+  *Figura 2.1. Modelo de datos del dominio.*
 
-Podemos plantear las tablas equivalentes para dicho modelo de datos.
+  Podemos plantear las tablas equivalentes para dicho modelo de datos.
 
 | (a) | (b) |
 | :-: | :-: |
 | <img src="Imagenes/fig-2-2a-tabla-cursos.png" alt="Tabla Cursos con ocho filas" width="320"> | <img src="Imagenes/fig-2-2b-tabla-alumnos.png" alt="Tabla Alumnos con columna Id_Curso, ocho filas" width="290"> |
 
-*Figura 2.2. Relación un curso a muchos alumnos. (a) Tabla Cursos. (b) Tabla alumnos.*
+  *Figura 2.2. Relación un curso a muchos alumnos. (a) Tabla Cursos. (b) Tabla alumnos.*
 
-<details>
-<summary><b>Transcripción de la Figura 2.2</b> — el contenido de las dos imágenes, en texto</summary>
+  <details>
+  <summary><b>Transcripción de la Figura 2.2</b> — el contenido de las dos imágenes, en texto</summary>
 
-**(a) `Cursos`** — `Id`: clave primaria · `Nombre`: no permite nulables. *(Los mismos ocho cursos de la Figura 1.2a.)*
+  **(a) `Cursos`** — `Id`: clave primaria · `Nombre`: no permite nulables. *(Los mismos ocho cursos de la Figura 1.2a.)*
 
 | Id | Nombre |
 | --- | --- |
@@ -201,80 +200,83 @@ Podemos plantear las tablas equivalentes para dicho modelo de datos.
 
 </details>
 
-De la misma forma que en el ejercicio anterior, aquí planteo algunas premisas que me permitiera saber si voy bien.
+  De la misma forma que en el ejercicio anterior, aquí planteo algunas premisas que me permitiera saber si voy bien.
 
-### Cardinalidad
+  > **Cardinalidad**
+  >
+  > ***En este modelo hay una relación de uno a muchos:***
+  >
+  > ***Se tiene que al curso de Matemática (uno) van Luisa, Lucrecia, LiLiana y Leonel (muchos).***
+  > 
+  > ***Pero, el Leonel que va a "Reparación de PC" (uno), no es el mismo Leonel que el que va al curso de Matemática.***
+  > 
+  > ***Ambos tienen diferente ID, por lo tanto aunque la persona puede que sea la misma, la figura de alumno aquí representa más la inscripción. Así que el modelo de Alumno podría llamarse `InscripcionAlumno`.***
+  >
+  > ***Así tenemos:***
+  >
+  >  - ***En un curso hay muchos alumnos.***
+  >  - ***Un alumno (inscripción) en un curso.***
+  >
+  > ***Por lo tanto:***
+  >
+  > - **Muchos a uno.**
+  >
+  > ***Así que tenemos que de la tabla de alumno, por cada alumno tenemos que tener una referencia hacia alguna de las entidades del Curso.***
 
-En este modelo hay una relación de uno a muchos:
+  > **Composición**
+  >
+  > ***No hay un mismo objeto "Parte" que componga dos o más "Todos". Esta premisa se logra en parte mediante las restricciones de unicidad del par Id de alumno con la Id de referencia al curso.***
+  >
+  > ***La otra parte es asegurarse que no haya una Parte "Alumno" sin curso. Sino sería como tener una inscripción sin alumno. Con agregar una restricción de no permitir nulables en la id de referencia a curso en la Tabla Alumnos.***
+  >
+  > ***También, para asegurarse de lo dicho en el párrafo anterior es necesario cubrir el caso de que se borre un curso, automáticamente se deberían borrar los alumnos asociados. Esto se logra agregando en la integridad referencial el delete en cascada.***
+  >
 
-Se tiene que al curso de Matemática (uno) van Luisa, Lucrecia, LiLiana y Leonel (muchos).
+  > <img src="Imagenes/icono-nota.png" alt="Ícono de nota" width="28" align="left">
+  >
+  > ***A diferencia de lo visto en el modelo con agregación, "El alumno" aquí representa una inscripción antes los ojos del observador.***
 
-Pero, el Leonel que va a "Reparación de PC" (uno), no es el mismo Leonel que el que va al curso de Matemática.
-
-Ambos tienen diferente ID, por lo tanto aunque la persona puede que sea la misma, la figura de alumno aquí representa más la inscripción. Así que el modelo de Alumno podría llamarse `InscripcionAlumno`.
-
-Así tenemos:
-
-- En un curso hay muchos alumnos.
-- Un alumno (inscripción) en un curso.
-
-Por lo tanto:
-
-- **Muchos a uno.**
-
-Así que tenemos que de la tabla de alumno, por cada alumno tenemos que tener una referencia hacia alguna de las entidades del Curso.
-
-### Composición
-
-No hay un mismo objeto "Parte" que componga dos o más "Todos". Esta premisa se logra en parte mediante las restricciones de unicidad del par Id de alumno con la Id de referencia al curso.
-
-La otra parte es asegurarse que no haya una Parte "Alumno" sin curso. Sino sería como tener una inscripción sin alumno. Con agregar una restricción de no permitir nulables en la id de referencia a curso en la Tabla Alumnos.
-
-También, para asegurarse de lo dicho en el párrafo anterior es necesario cubrir el caso de que se borre un curso, automáticamente se deberían borrar los alumnos asociados. Esto se logra agregando en la integridad referencial el delete en cascada.
-
-> <img src="Imagenes/icono-nota.png" alt="Ícono de nota" width="28" align="left">
->
-> A diferencia de lo visto en el modelo con agregación, "El alumno" aquí representa una inscripción antes los ojos del observador.
 
 ### Actividades
 
-1. Realizar el script que cree la base de datos, las tablas, las restricciones, la inserción de los datos dados en la Figura 2.2. (`1_creando_base_de_prueba.sql`)
-2. Realizar otro script que borre el Curso Matemáticas, con las restricciones en cascada debería borrar también los alumnos relacionados a ese curso. Realizar la consulta de la tabla alumnos junto al curso antes y después del borrado del curso. (`2_delete_matematica.sql`)
+  1. Realizar el script que cree la **base de datos**, las **tablas**, las **restricciones**, la **inserción** de los datos dados en la Figura 2.2. (`1_creando_base_de_prueba.sql`)
+  
+  2. Realizar otro script que borre el Curso Matemáticas, con las restricciones en cascada debería borrar también los alumnos relacionados a ese curso. Realizar la consulta de la tabla alumnos junto al curso antes y después del borrado del curso. (`2_delete_matematica.sql`)
 
-![Dos grillas de resultados de SSMS. La de arriba, rotulada Consulta Antes del delete de Matemática, lista ocho filas. La de abajo, rotulada Consulta despues del delete de Matemática, lista cuatro filas: ya no aparecen los alumnos del curso Matemática](Imagenes/fig-2-3-consulta-antes-despues.png)
+  ![Dos grillas de resultados de SSMS. La de arriba, rotulada Consulta Antes del delete de Matemática, lista ocho filas. La de abajo, rotulada Consulta despues del delete de Matemática, lista cuatro filas: ya no aparecen los alumnos del curso Matemática](Imagenes/fig-2-3-consulta-antes-despues.png)
 
-*Figura 2.3. Consulta de los alumnos antes y después de borrar el curso matemáticas*
+  *Figura 2.3. Consulta de los alumnos antes y después de borrar el curso matemáticas*
 
-> <img src="Imagenes/icono-nota.png" alt="Ícono de nota" width="28" align="left">
->
-> En la Figura 2.3, se observa que al borrar el "Todo" se borraron las partes también.
+  > <img src="Imagenes/icono-nota.png" alt="Ícono de nota" width="28" align="left">
+  >
+  > En la Figura 2.3, se observa que al borrar el "Todo" se borraron las partes también.
 
 ---
 
 ## Ejercicio 3. Alumno-Domicilio-Localidad - Composición y agregación
 
-Se tiene en la Figura 3.1 las siguiente clases relacionadas que representan el modelo de datos
+  Se tiene en la Figura 3.1 las siguiente clases relacionadas que representan el modelo de datos
 
-![Diagrama UML: la clase Alumno se compone (rombo relleno, multiplicidad 1 a 1) de Domicilio por el rol +Domicilio; Domicilio agrega (rombo blanco, multiplicidad 1) a Localidad por el rol +Localidad. Domicilio tiene Calle, Numero y Localidad; Localidad tiene Id, Nombre y CodigoPostal](Imagenes/fig-3-1-modelo-composicion-agregacion.png)
+  ![Diagrama UML: la clase Alumno se compone (rombo relleno, multiplicidad 1 a 1) de Domicilio por el rol +Domicilio; Domicilio agrega (rombo blanco, multiplicidad 1) a Localidad por el rol +Localidad. Domicilio tiene Calle, Numero y Localidad; Localidad tiene Id, Nombre y CodigoPostal](Imagenes/fig-3-1-modelo-composicion-agregacion.png)
 
-*Figura 3.1. Modelo de datos del dominio.*
+  *Figura 3.1. Modelo de datos del dominio.*
 
-Podemos plantear las tablas equivalentes para dicho modelo de datos.
+  Podemos plantear las tablas equivalentes para dicho modelo de datos.
 
-**(a)**
+  **(a)**
 
-![Tabla Alumnos con las columnas Id, Nombre, Calle, Numero e Id_Localidad, ocho filas](Imagenes/fig-3-2a-tabla-alumnos.png)
+  ![Tabla Alumnos con las columnas Id, Nombre, Calle, Numero e Id_Localidad, ocho filas](Imagenes/fig-3-2a-tabla-alumnos.png)
 
-**(b)**
+  **(b)**
 
-![Tabla Localidades con las columnas Id, Nombre y Codigo_Postal, tres filas](Imagenes/fig-3-2b-tabla-localidades.png)
+  ![Tabla Localidades con las columnas Id, Nombre y Codigo_Postal, tres filas](Imagenes/fig-3-2b-tabla-localidades.png)
 
-*Figura 3.2. Relación de un alumno a un domicilio. (a) Tabla Alumnos. (b) Tabla localidades.*
+  *Figura 3.2. Relación de un alumno a un domicilio. (a) Tabla Alumnos. (b) Tabla localidades.*
 
-<details>
-<summary><b>Transcripción de la Figura 3.2</b> — el contenido de las dos imágenes, en texto</summary>
+  <details>
+  <summary><b>Transcripción de la Figura 3.2</b> — el contenido de las dos imágenes, en texto</summary>
 
-**(a) `Alumnos`** — `Id`: clave primaria · `Nombre`: no permite nulables · `Id_Localidad`: clave foránea
+  **(a) `Alumnos`** — `Id`: clave primaria · `Nombre`: no permite nulables · `Id_Localidad`: clave foránea
 
 | Id | Nombre | Calle | Numero | Id_Localidad |
 | --- | --- | --- | --- | --- |
@@ -309,12 +311,12 @@ Lo referente a las localidades, es simplemente una agregación a domicilio, el d
 
 ### Actividades
 
-1. Realizar el script que cree la base de datos, las tablas, las restricciones, la inserción de los datos dados en la Figura 3.2. (`1_creando_base_de_prueba.sql`)
-2. Listar todos los alumnos con su domicilio correspondiente. (`2_consulta_alumnos.sql`)
+  1. Realizar el script que cree la base de datos, las tablas, las restricciones, la inserción de los datos dados en la Figura 3.2. (`1_creando_base_de_prueba.sql`)
+  2. Listar todos los alumnos con su domicilio correspondiente. (`2_consulta_alumnos.sql`)
 
-![Grilla de resultados de SSMS con ocho filas y las columnas Nombre, Calle, Numero y Localidad](Imagenes/fig-3-3-consulta-alumnos.png)
+  ![Grilla de resultados de SSMS con ocho filas y las columnas Nombre, Calle, Numero y Localidad](Imagenes/fig-3-3-consulta-alumnos.png)
 
-*Figura 3.3. Consulta final de los alumnos.*
+   *Figura 3.3. Consulta final de los alumnos.*
 
 ---
 
@@ -336,16 +338,3 @@ Filipuzzi, Fernando -
 | Índice | Recreado con enlaces internos; el original tenía números de página, que no aplican en markdown |
 | Transcripciones | Las tablas de las figuras 1.2, 2.2 y 3.2 están además transcriptas en texto, leyendo cada imagen |
 
-### Inventario de imágenes
-
-Las 18 imágenes del documento están en [`Imagenes/`](Imagenes/), renombradas por su figura. **Cuatro son decorativas** y no se insertaron en el cuerpo: `icono-enlace-home.png` y `icono-enlace-referencias.png` (los dibujos que acompañan los enlaces del encabezado), `img-encabezado.png` (44×41 px, sin contenido visible) y `icono-nota.png`, que sí se usa dentro de los tres recuadros de nota.
-
-### Dos cosas que no cierran en el original
-
-Se anotan, **no se corrigieron**: el texto se transcribió tal como está.
-
-1. **El Leonel de "Reparación de PC" (Ejercicio 2).** El texto dice que «el Leonel que va a "Reparación de PC" (uno), no es el mismo Leonel que el que va al curso de Matemática». En la Figura 2.2b los dos Leonel son el `Id 5` con `Id_Curso 2` —Programación— y el `Id 7` con `Id_Curso 1` —Matemática—. **Ningún alumno tiene `Id_Curso 7`**, que es el de Reparación de PC. El argumento se sostiene igual con los datos de la figura: son dos inscripciones distintas de la misma persona.
-
-2. **El domicilio que exige un domicilio (Ejercicio 3).** El texto dice «el domicilio exige si o si un domicilio». Por el contexto —la agregación va de `Domicilio` hacia `Localidad`— parece querer decir que el domicilio exige una localidad.
-
-Además, en el Ejercicio 1 la premisa nombra a **Liliana** entre los alumnos de Matemática y en la Figura 1.2c figura como `Liliana` (`Id 6`); el texto la escribe «LiLiana». Se transcribió como está en cada lugar.
